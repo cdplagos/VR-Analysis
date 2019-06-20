@@ -246,14 +246,15 @@ def plot_mf_z(plt, outdir, snap, vol_eagle,  histmtot, histm30, histmgas, histma
     common.savefig(outdir, fig, "allmassmf_30kpc_z.pdf")
 
 
-def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, SigmaMstar30, ZstarMstar, ZSFMstar, AgeSMstar):
+def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, SigmaMstar30, ZstarMstar, 
+                   ZSFMstar, AgeSMstar, SFRMstar30, R50pMstar30, ZNSFMstar):
 
     bin_it = functools.partial(us.wmedians, xbins=xmf)
 
     ########################### will plot main sequence for all stellar particles in the subhalo
     xtit="$\\rm log_{10} (\\rm M_{\\star, tot}/M_{\odot})$"
     ytit="$\\rm log_{10}(\\rm SFR/M_{\odot} yr^{-1})$"
-    xmin, xmax, ymin, ymax = 7, 12, -5, 1
+    xmin, xmax, ymin, ymax = 7, 12, -5, 1.5
     xleg = xmax - 0.2 * (xmax-xmin)
     yleg = ymax - 0.1 * (ymax-ymin)
 
@@ -264,7 +265,7 @@ def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, 
     zins = [0, 1, 2]
     subplots = [311, 312, 313]
 
-    sn, mstot, sfr, r50, ms30 = common.load_observation('/fred/oz009/clagos/EAGLE/L0025N0376/REFERENCE/data/', 'SUBFIND-EAGLE-DATABASE.data', [2, 29, 30, 26, 22])
+    sn, mstot, sfr, r50, ms30, sfr30 = common.load_observation('/fred/oz009/clagos/EAGLE/L0025N0376/REFERENCE/data/', 'SUBFIND-EAGLE-DATABASE.data', [2, 29, 30, 26, 22, 24])
 
     for subplot, idx, z, s in zip(subplots, idx, zins, snap):
           ax = fig.add_subplot(subplot)
@@ -310,6 +311,67 @@ def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, 
               common.prepare_legend(ax, ['b','r'])
 
     common.savefig(outdir, fig, "main_sequence_z.pdf")
+
+    ########################### will plot main sequence for 30kpc aperture
+    xtit="$\\rm log_{10} (\\rm M_{\\star, 30kpc}/M_{\odot})$"
+    ytit="$\\rm log_{10}(\\rm SFR_{\\rm 30kpc}/M_{\odot} yr^{-1})$"
+    xmin, xmax, ymin, ymax = 7, 12, -5, 1.5
+    xleg = xmax - 0.2 * (xmax-xmin)
+    yleg = ymax - 0.1 * (ymax-ymin)
+
+    fig = plt.figure(figsize=(5,10))
+
+    idx = [0,1,2]
+
+    zins = [0, 1, 2]
+    subplots = [311, 312, 313]
+
+
+    for subplot, idx, z, s in zip(subplots, idx, zins, snap):
+          ax = fig.add_subplot(subplot)
+          if (idx == 2):
+              xtitplot = xtit
+          else:
+              xtitplot = ' '
+          common.prepare_ax(ax, xmin, xmax, ymin, ymax, xtitplot, ytit, locators=(0.1, 1, 0.1))
+          ax.text(xleg,yleg, 'z=%s' % (str(z)))
+  
+          #from SUBFIND
+          ind = np.where((ms30 > 0) & (sn == s) & (sfr30 > 0))
+          rplot = bin_it(x= np.log10(ms30[ind]), y = np.log10(sfr30[ind]))
+ 
+          ind = np.where(rplot[0,:] != 0.)
+          xplot = xmf[ind]
+          yplot = rplot[0,ind]
+          errdn = rplot[1,ind]
+          errup = rplot[2,ind]
+
+          if idx == 0:
+              ax.plot(xplot,yplot[0],'b', linestyle='dashed', label ='EAGLE L25')
+          if idx > 0:
+              ax.plot(xplot,yplot[0],'b', linestyle='dashed')
+          ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='b', alpha=0.2,interpolate=True)
+          ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='b', alpha=0.2,interpolate=True)
+
+          #VR
+          ind = np.where(SFRMstar30[idx,0,:] != 0.)
+          xplot = xmf[ind]
+          yplot = SFRMstar30[idx,0,ind]
+          errdn = SFRMstar30[idx,1,ind]
+          errup = SFRMstar30[idx,2,ind]
+
+          if idx == 0:
+              ax.plot(xplot,yplot[0],'r', label ='VR')
+          if idx > 0:
+              ax.plot(xplot,yplot[0],'r')
+          ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='r', alpha=0.2,interpolate=True)
+          ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='r', alpha=0.2,interpolate=True)
+
+          if idx == 0:
+              common.prepare_legend(ax, ['b','r'])
+
+    common.savefig(outdir, fig, "main_sequence_30kpc_z.pdf")
+
 
     ########################### will plot r50 vs stellar mass for all stellar particles in the subhalo
     xtit="$\\rm log_{10} (\\rm M_{\\star,tot}/M_{\odot})$"
@@ -374,7 +436,7 @@ def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, 
     common.savefig(outdir, fig, "r50_Mstar_z.pdf")
 
     ################## will plot r50 vs stellar mass for quantities measured within 30kpc
-    sn, mstot, sfr, r50 = common.load_observation('/fred/oz009/clagos/EAGLE/L0025N0376/REFERENCE/data/', 'SUBFIND-EAGLE-DATABASE-REF.data', [2, 22, 30, 33])
+    sn, mstot, sfr, r50, r50p = common.load_observation('/fred/oz009/clagos/EAGLE/L0025N0376/REFERENCE/data/', 'SUBFIND-EAGLE-DATABASE-REF.data', [2, 22, 30, 33, 34])
     xtit="$\\rm log_{10} (\\rm M_{\\star,30kpc}/M_{\odot})$"
     ytit="$\\rm log_{10}(\\rm R_{\\rm 50,30kpc}/pMpc)$"
     xmin, xmax, ymin, ymax = 7, 12, -3.3, -1
@@ -435,6 +497,68 @@ def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, 
               common.prepare_legend(ax, ['b','r'])
 
     common.savefig(outdir, fig, "r50_Mstar_30kpc_z.pdf")
+
+    ################## will plot r50 vs stellar mass for quantities measured within 30kpc, but in this case the r50 is projected
+    xtit="$\\rm log_{10} (\\rm M_{\\star,30kpc}/M_{\odot})$"
+    ytit="$\\rm log_{10}(\\rm R_{\\rm 50,30kpc,2D}/pMpc)$"
+    xmin, xmax, ymin, ymax = 7, 12, -3.3, -1
+    xleg = xmax - 0.2 * (xmax-xmin)
+    yleg = ymax - 0.1 * (ymax-ymin)
+
+    fig = plt.figure(figsize=(5,10))
+
+    idx = [0,1,2]
+
+    zins = [0, 1, 2]
+    subplots = [311, 312, 313]
+
+    for subplot, idx, z, s in zip(subplots, idx, zins, snap):
+          ax = fig.add_subplot(subplot)
+
+          if (idx == 2):
+              xtitplot = xtit
+          else:
+              xtitplot = ' '
+          common.prepare_ax(ax, xmin, xmax, ymin, ymax, xtitplot, ytit, locators=(0.1, 1, 0.1))
+          plt.subplots_adjust(left=0.2)
+
+          ax.text(xleg,yleg, 'z=%s' % (str(z)))
+  
+          #from SUBFIND
+          ind = np.where((mstot > 0) & (sn == s) & (r50p > 0))
+          rplot = bin_it(x= np.log10(mstot[ind]), y = np.log10(r50p[ind])-3.0)
+ 
+          ind = np.where(rplot[0,:] != 0.)
+          xplot = xmf[ind]
+          yplot = rplot[0,ind]
+          errdn = rplot[1,ind]
+          errup = rplot[2,ind]
+
+          if idx == 0:
+              ax.plot(xplot,yplot[0],'b', linestyle='dashed', label ='EAGLE L25')
+          if idx > 0:
+              ax.plot(xplot,yplot[0],'b', linestyle='dashed')
+          ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='b', alpha=0.2,interpolate=True)
+          ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='b', alpha=0.2,interpolate=True)
+
+          #VR
+          ind = np.where(R50pMstar30[idx,0,:] != 0.)
+          xplot = xmf[ind]
+          yplot = R50pMstar30[idx,0,ind]
+          errdn = R50pMstar30[idx,1,ind]
+          errup = R50pMstar30[idx,2,ind]
+
+          if idx == 0:
+              ax.plot(xplot,yplot[0],'r', label ='VR')
+          if idx > 0:
+              ax.plot(xplot,yplot[0],'r')
+          ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='r', alpha=0.2,interpolate=True)
+          ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='r', alpha=0.2,interpolate=True)
+
+          if idx == 0:
+              common.prepare_legend(ax, ['b','r'])
+
+    common.savefig(outdir, fig, "r50_projected_Mstar_30kpc_z.pdf")
 
 
     ########################### will plot stellar velocity dispersion vs. stellar mass
@@ -514,7 +638,7 @@ def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, 
     zins = [0, 1, 2]
     subplots = [311, 312, 313]
 
-    sn, mstot, zsf, zs, age = common.load_observation('/fred/oz009/clagos/EAGLE/L0025N0376/REFERENCE/data/', 'SUBFIND-EAGLE-DATABASE.data', [2, 29, 33, 34, 35])
+    sn, mstot, zsf, zs, age, znsf = common.load_observation('/fred/oz009/clagos/EAGLE/L0025N0376/REFERENCE/data/', 'SUBFIND-EAGLE-DATABASE.data', [2, 29, 33, 34, 35, 36])
 
     for subplot, idx, z, s in zip(subplots, idx, zins, snap):
           ax = fig.add_subplot(subplot)
@@ -560,9 +684,9 @@ def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, 
 
     common.savefig(outdir, fig, "zstar_mstar_z.pdf")
 
-    ################ will plot gas metallicity vs. stellar mass
+    ################ will plot star-forming gas metallicity vs. stellar mass
     xtit="$\\rm log_{10} (\\rm M_{\\star, tot}/M_{\odot})$"
-    ytit="$\\rm log_{10}(\\rm Z_{\\rm gas})$"
+    ytit="$\\rm log_{10}(\\rm Z_{\\rm SF,gas})$"
     xmin, xmax, ymin, ymax = 7, 12, -5, -1
     xleg = xmax - 0.2 * (xmax-xmin)
     yleg = ymax - 0.1 * (ymax-ymin)
@@ -617,6 +741,64 @@ def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, 
               common.prepare_legend(ax, ['b','r'])
 
     common.savefig(outdir, fig, "zsfgas_mstar_z.pdf")
+
+    ################ will plot non-star-forming gas metallicity vs. stellar mass
+    xtit="$\\rm log_{10} (\\rm M_{\\star, tot}/M_{\odot})$"
+    ytit="$\\rm log_{10}(\\rm Z_{\\rm non-SF,gas})$"
+    xmin, xmax, ymin, ymax = 7, 12, -5, -1
+    xleg = xmax - 0.2 * (xmax-xmin)
+    yleg = ymax - 0.1 * (ymax-ymin)
+
+    fig = plt.figure(figsize=(5,10))
+
+    idx = [0,1,2]
+
+    zins = [0, 1, 2]
+    subplots = [311, 312, 313]
+
+    for subplot, idx, z, s in zip(subplots, idx, zins, snap):
+          ax = fig.add_subplot(subplot)
+          if (idx == 2):
+              xtitplot = xtit
+          else:
+              xtitplot = ' '
+          common.prepare_ax(ax, xmin, xmax, ymin, ymax, xtitplot, ytit, locators=(0.1, 1, 0.1))
+          ax.text(xleg,yleg, 'z=%s' % (str(z)))
+  
+          #from SUBFIND
+          ind = np.where((mstot > 0) & (sn == s) & (znsf > 0))
+          rplot = bin_it(x= np.log10(mstot[ind]), y = np.log10(znsf[ind]))
+          ind = np.where(rplot[0,:] != 0.)
+          xplot = xmf[ind]
+          yplot = rplot[0,ind]
+          errdn = rplot[1,ind]
+          errup = rplot[2,ind]
+
+          if idx == 0:
+              ax.plot(xplot,yplot[0],'b', linestyle='dashed', label ='EAGLE L25')
+          if idx > 0:
+              ax.plot(xplot,yplot[0],'b', linestyle='dashed')
+          ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='b', alpha=0.2,interpolate=True)
+          ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='b', alpha=0.2,interpolate=True)
+
+          #VR
+          ind = np.where(ZNSFMstar[idx,0,:] != 0.)
+          xplot = xmf[ind]
+          yplot = ZNSFMstar[idx,0,ind]
+          errdn = ZNSFMstar[idx,1,ind]
+          errup = ZNSFMstar[idx,2,ind]
+
+          if idx == 0:
+              ax.plot(xplot,yplot[0],'r', label ='VR')
+          if idx > 0:
+              ax.plot(xplot,yplot[0],'r')
+          ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='r', alpha=0.2,interpolate=True)
+          ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='r', alpha=0.2,interpolate=True)
+
+          if idx == 0:
+              common.prepare_legend(ax, ['b','r'])
+
+    common.savefig(outdir, fig, "znsfgas_mstar_z.pdf")
 
     ################ will plot stellar ages vs stellar mass
     xtit="$\\rm log_{10} (\\rm M_{\\star, tot}/M_{\odot})$"
@@ -677,12 +859,20 @@ def plot_scaling_z(plt, outdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, 
     common.savefig(outdir, fig, "starage_mstar_z.pdf")
 
 
-def prepare_data(hdf5_data, j, histmtot, histm30, histmgas, SFRMstar, R50Mstar, SigmaMstar,  histmall, MBHMstar, R50Mstar30, SigmaMstar30, ZstarMstar, ZSFMstar, AgeSMstar):
+def prepare_data(hdf5_data, j, histmtot, histm30, histmgas, SFRMstar, R50Mstar, SigmaMstar,  
+                 histmall, MBHMstar, R50Mstar30, SigmaMstar30, ZstarMstar, ZSFMstar, AgeSMstar, 
+                 SFRMstar30, R50pMstar30, ZNSFMstar):
 
     # Unpack data
-    (ms30, mstot, mg30, r50stot, sfrtot, mtot, mbh, r50s30, vs30, zgas, zgas_sf, zstar, age_star) = hdf5_data
+    (ms30, mstot, mg30, r50stot, sfrtot, mtot, mbh, r50s30, vs30, zgas, zgas_sf, zstar, 
+     age_star, sfr30, r50s30p1, r50s30p2, r50s30p3, zgas_nsf) = hdf5_data
+
     bin_it = functools.partial(us.wmedians, xbins=xmf)
-    print age_star
+
+    #take the average of the three projections provided by VR
+    r50s30p = (r50s30p1 + r50s30p2 + r50s30p3)/3.0
+
+    #mass functions
     ind = np.where(mstot > 0)
     H, bins_edges = np.histogram(np.log10(mstot[ind]) + 10.0,bins=np.append(mbins,mupp))
     histmtot[j,:] = histmtot[j,:] + H
@@ -696,26 +886,40 @@ def prepare_data(hdf5_data, j, histmtot, histm30, histmgas, SFRMstar, R50Mstar, 
     H, bins_edges = np.histogram(np.log10(mtot[ind]) + 10.0,bins=np.append(mbins,mupp))
     histmall[j,:] = histmall[j,:] + H
 
+    #main sequences
     ind = np.where((mstot > 0) & (sfrtot > 0))
     SFRMstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(sfrtot[ind]))
-    ind = np.where((mstot > 0) & (r50stot > 0))
-    R50Mstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(r50stot[ind]))
+    ind = np.where((ms30 > 0) & (sfr30 > 0))
+    SFRMstar30[j,:] = bin_it(x=np.log10(ms30[ind]) + 10.0, y=np.log10(sfr30[ind]))
 
+    #BH-stellar mass relation
     ind = np.where((mstot > 0) & (mbh > 0))
     MBHMstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(mbh[ind]) + 10.0)
 
+    #size-mass relations
+    ind = np.where((mstot > 0) & (r50stot > 0))
+    R50Mstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(r50stot[ind]))
     ind = np.where((ms30 > 0) & (r50s30 > 0))
     R50Mstar30[j,:] = bin_it(x=np.log10(ms30[ind]) + 10.0, y=np.log10(r50s30[ind]))
+    ind = np.where((ms30 > 0) & (r50s30p > 0))
+    R50pMstar30[j,:] = bin_it(x=np.log10(ms30[ind]) + 10.0, y=np.log10(r50s30p[ind]))
 
+    #velocity dispersion-mass relation
     ind = np.where((ms30 > 0) & (vs30 > 0))
     SigmaMstar30[j,:] = bin_it(x=np.log10(ms30[ind]) + 10.0, y=np.log10(vs30[ind]/1.73205080757))
 
-    ind = np.where((mstot > 0) & (zstar > 0))
-    ZstarMstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(zstar[ind]))
+    #age-mass relation
     ind = np.where((mstot > 0) & (age_star > 0))
     AgeSMstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(age_star[ind]/1e9))
+ 
+
+    #mass-metallicity relations
+    ind = np.where((mstot > 0) & (zstar > 0))
+    ZstarMstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(zstar[ind]))
     ind = np.where((mstot > 0) & (zgas_sf > 0))
     ZSFMstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(zgas_sf[ind]))
+    ind = np.where((mstot > 0) & (zgas_nsf > 0))
+    ZNSFMstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(zgas_nsf[ind]))
 
 def main():
 
@@ -730,7 +934,10 @@ def main():
     name_file = 'fourth-try-6dfofsubhalos'#:'third-try'
 
     plt = common.load_matplotlib()
-    fields = ['Aperture_mass_star_30_kpc','M_star','Aperture_mass_gas_30_kpc','R_HalfMass_star','SFR_gas','Aperture_mass_30_kpc','M_bh','Aperture_rhalfmass_star_30_kpc','Aperture_veldisp_star_30_kpc', 'Zmet_gas', 'Zmet_gas_sf','Zmet_star','tage_star']
+    fields = ['Aperture_mass_star_30_kpc','M_star','Aperture_mass_gas_30_kpc','R_HalfMass_star','SFR_gas','Aperture_mass_30_kpc','M_bh',
+              'Aperture_rhalfmass_star_30_kpc','Aperture_veldisp_star_30_kpc', 'Zmet_gas', 'Zmet_gas_sf','Zmet_star','tage_star', 
+              'Aperture_SFR_gas_30_kpc','Projected_aperture_1_rhalfmass_star_30_kpc','Projected_aperture_2_rhalfmass_star_30_kpc',
+              'Projected_aperture_3_rhalfmass_star_30_kpc', 'Zmet_gas_nsf']
 
     # Create histogram for mass functions
     histmtot = np.zeros(shape = (len(snap),len(mbins)))
@@ -739,19 +946,23 @@ def main():
     histmall = np.zeros(shape = (len(snap),len(mbins)))
 
     # create matrices for several scaling relations
-    SFRMstar   = np.zeros(shape = (len(snap),3,len(mbins)))
-    R50Mstar   = np.zeros(shape = (len(snap),3,len(mbins)))
-    SigmaMstar = np.zeros(shape = (len(snap),3,len(mbins)))
-    MBHMstar   = np.zeros(shape = (len(snap),3,len(mbins)))
-    R50Mstar30 = np.zeros(shape = (len(snap),3,len(mbins)))
-    SigmaMstar30= np.zeros(shape = (len(snap),3,len(mbins)))
-    ZstarMstar = np.zeros(shape = (len(snap),3,len(mbins)))
-    ZSFMstar   = np.zeros(shape = (len(snap),3,len(mbins)))
-    AgeSMstar  = np.zeros(shape = (len(snap),3,len(mbins)))
+    SFRMstar     = np.zeros(shape = (len(snap),3,len(mbins)))
+    SFRMstar30   = np.zeros(shape = (len(snap),3,len(mbins)))
+    R50Mstar     = np.zeros(shape = (len(snap),3,len(mbins)))
+    SigmaMstar   = np.zeros(shape = (len(snap),3,len(mbins)))
+    MBHMstar     = np.zeros(shape = (len(snap),3,len(mbins)))
+    R50Mstar30   = np.zeros(shape = (len(snap),3,len(mbins)))
+    R50pMstar30  = np.zeros(shape = (len(snap),3,len(mbins)))
+    SigmaMstar30 = np.zeros(shape = (len(snap),3,len(mbins)))
+    ZstarMstar   = np.zeros(shape = (len(snap),3,len(mbins)))
+    AgeSMstar    = np.zeros(shape = (len(snap),3,len(mbins)))
+    ZSFMstar     = np.zeros(shape = (len(snap),3,len(mbins)))
+    ZNSFMstar    = np.zeros(shape = (len(snap),3,len(mbins)))
 
     for j in range(0,len(snap)):
         hdf5_data = common.read_data(model_dir, fields, snap[j], subvols, name_file)
-        prepare_data(hdf5_data, j, histmtot, histm30, histmgas, SFRMstar, R50Mstar, SigmaMstar, histmall, MBHMstar, R50Mstar30, SigmaMstar30, ZstarMstar, ZSFMstar, AgeSMstar)
+        prepare_data(hdf5_data, j, histmtot, histm30, histmgas, SFRMstar, R50Mstar, SigmaMstar, histmall, MBHMstar, R50Mstar30, SigmaMstar30, 
+                     ZstarMstar, ZSFMstar, AgeSMstar, SFRMstar30, R50pMstar30, ZNSFMstar)
 
     # Take logs for mass functions
     ind = np.where(histmtot > 0.)
@@ -769,7 +980,8 @@ def main():
     #mass funcion plots
     plot_mf_z(plt, output_dir+name_file+'/', snap, vol_eagle, histmtot, histm30, histmgas, histmall)
     #scaling relation plots
-    plot_scaling_z(plt, output_dir+name_file+'/', snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, SigmaMstar30, ZstarMstar, ZSFMstar, AgeSMstar)
+    plot_scaling_z(plt, output_dir+name_file+'/', snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, SigmaMstar30, ZstarMstar, ZSFMstar, AgeSMstar, 
+                  SFRMstar30, R50pMstar30, ZNSFMstar)
 
 if __name__ == '__main__':
     main()
