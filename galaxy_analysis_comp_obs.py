@@ -204,7 +204,7 @@ def plot_mf_z(plt, outdir, obsdir, snap, vol_eagle,  histmtot, histm30):
               cols = ['r'] + ['grey', 'grey','grey']
               common.prepare_legend(ax, cols)
 
-    common.savefig(outdir, fig, "smf_tot_z.pdf")
+    common.savefig(outdir, fig, "smf_tot_z_comp_obs.pdf")
 
     ############################# stellar mass function (30kpc aperture)
     xtit="$\\rm log_{10} (\\rm M_{\\star,\\rm 30kpc}/M_{\odot})$"
@@ -248,7 +248,7 @@ def plot_mf_z(plt, outdir, obsdir, snap, vol_eagle,  histmtot, histm30):
               cols =  ['grey', 'grey','grey']
               common.prepare_legend(ax, cols)
 
-    common.savefig(outdir, fig, "smf_30kpc_z.pdf")
+    common.savefig(outdir, fig, "smf_30kpc_z_comp_obs.pdf")
 
 
 def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MBHMstar, SigmaMstar30, ZstarMstar, 
@@ -315,7 +315,7 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           if idx == 0:
               common.prepare_legend(ax, ['b','PaleVioletRed', 'k'])
 
-    common.savefig(outdir, fig, "main_sequence_z.pdf")
+    common.savefig(outdir, fig, "main_sequence_z_comp_obs.pdf")
 
     ########################### will plot main sequence for 30kpc aperture
     xtit="$\\rm log_{10} (\\rm M_{\\star, 30kpc}/M_{\odot})$"
@@ -362,7 +362,7 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           if idx == 0:
               common.prepare_legend(ax, ['b','PaleVioletRed', 'k'])
 
-    common.savefig(outdir, fig, "main_sequence_30kpc_z.pdf")
+    common.savefig(outdir, fig, "main_sequence_30kpc_z_comp_obs.pdf")
 
 
 
@@ -423,7 +423,7 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           if idx == 0:
               common.prepare_legend(ax, ['b','darkgreen','k'], loc = 'upper left')
 
-    common.savefig(outdir, fig, "r50_Mstar_z.pdf")
+    common.savefig(outdir, fig, "r50_Mstar_z_comp_obs.pdf")
 
     ################## will plot r50 vs stellar mass for quantities measured within 30kpc
     xtit="$\\rm log_{10} (\\rm M_{\\star,30kpc}/M_{\odot})$"
@@ -470,7 +470,7 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           if idx == 0:
               common.prepare_legend(ax, ['b','darkgreen','k'], loc = 'upper left')
 
-    common.savefig(outdir, fig, "r50_Mstar_30kpc_z.pdf")
+    common.savefig(outdir, fig, "r50_Mstar_30kpc_z_comp_obs.pdf")
 
     ################## will plot r50 vs stellar mass for quantities measured within 30kpc, but in this case the r50 is projected
     xtit="$\\rm log_{10} (\\rm M_{\\star,30kpc}/M_{\odot})$"
@@ -517,7 +517,7 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           if idx == 0:
               common.prepare_legend(ax, ['b','darkgreen','k'], loc = 'upper left')
 
-    common.savefig(outdir, fig, "r50_projected_Mstar_30kpc_z.pdf")
+    common.savefig(outdir, fig, "r50_projected_Mstar_30kpc_z_comp_obs.pdf")
 
 
     ########################### will plot stellar velocity dispersion vs. stellar mass
@@ -560,10 +560,18 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='k', alpha=0.2,interpolate=True)
           ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='k', alpha=0.2,interpolate=True)
 
-          if idx == 0:
-              common.prepare_legend(ax, ['k'])
+          #observations
+          if ( z == 0):
+               lm, sig, sigdn, sigup = common.load_observation(obsdir, 'StellarPops/vdS19-sigma.csv', [0,1,2,3])
+               sig   = np.log10(sig)
+               sigdn = np.log10(sigdn)
+               sigup = np.log10(sigup)
+               common.errorbars(ax, lm, sig, sigdn, sigup, 'b', 'D', label='van de Sande+19')
 
-    common.savefig(outdir, fig, "vdisp_Mstar_30kpc_z.pdf")
+          if idx == 0:
+              common.prepare_legend(ax, ['k'], loc='upper left')
+
+    common.savefig(outdir, fig, "vdisp_Mstar_30kpc_z_comp_obs.pdf")
 
     ############ will plot stellar metallicity-stellar mass
     xtit="$\\rm log_{10} (\\rm M_{\\star, 30kpc}/M_{\odot})$"
@@ -613,7 +621,7 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           if idx == 0:
               common.prepare_legend(ax, ['k', 'b', 'b'], loc = 'lower right')
 
-    common.savefig(outdir, fig, "zstar_mstar_30kpc_z.pdf")
+    common.savefig(outdir, fig, "zstar_mstar_30kpc_z_comp_obs.pdf")
 
     ################ will plot star-forming gas metallicity vs. stellar mass
     xtit="$\\rm log_{10} (\\rm M_{\\star, 30kpc}/M_{\odot})$"
@@ -671,7 +679,7 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           if idx == 0:
               common.prepare_legend(ax, ['k','b','b'], loc = 'lower right')
 
-    common.savefig(outdir, fig, "zsfgas_mstar_30kpc_z.pdf")
+    common.savefig(outdir, fig, "zsfgas_mstar_30kpc_z_comp_obs.pdf")
 
     ################ will plot stellar ages vs stellar mass
     xtit="$\\rm log_{10} (\\rm M_{\\star, 30kpc}/M_{\odot})$"
@@ -708,13 +716,18 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
               ax.plot(xplot,yplot[0],'k', label ='VR')
           if idx > 0:
               ax.plot(xplot,yplot[0],'k')
-          ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='r', alpha=0.2,interpolate=True)
-          ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='r', alpha=0.2,interpolate=True)
+          ax.fill_between(xplot,yplot[0],yplot[0]-errdn[0], facecolor='k', alpha=0.2,interpolate=True)
+          ax.fill_between(xplot,yplot[0],yplot[0]+errup[0], facecolor='k', alpha=0.2,interpolate=True)
+
+          #observations
+          if ( z == 0):
+               lm, age, agedn, ageup = common.load_observation(obsdir, 'StellarPops/vdS19-age.csv', [0,1,2,3])
+               common.errorbars(ax, lm, age, agedn, ageup, 'b', 'D', label='van de Sande+19')
 
           if idx == 0:
               common.prepare_legend(ax, ['k'])
 
-    common.savefig(outdir, fig, "starage_mstar_z.pdf")
+    common.savefig(outdir, fig, "starage_mstar_z_comp_obs.pdf")
 
     ################ will plot black hole mass vs stellar mass
     xtit="$\\rm log_{10} (\\rm M_{\\star, 30kpc}/M_{\odot})$"
@@ -786,7 +799,7 @@ def plot_scaling_z(plt, outdir, obsdir, snap, SFRMstar, R50Mstar, R50Mstar30, MB
           if idx == 0:
               common.prepare_legend(ax, ['k','r','maroon'], loc='upper left')
 
-    common.savefig(outdir, fig, "blackhole_stellarmass_z.pdf")
+    common.savefig(outdir, fig, "blackhole_stellarmass_z_comp_obs.pdf")
 
 def prepare_data(hdf5_data, j, histmtot, histm30, SFRMstar, R50Mstar, SigmaMstar,  
                  MBHMstar, R50Mstar30, SigmaMstar30, ZstarMstar, ZSFMstar, AgeSMstar, 

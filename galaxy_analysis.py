@@ -911,7 +911,7 @@ def prepare_data(hdf5_data, j, histmtot, histm30, histmgas, SFRMstar, R50Mstar, 
     #age-mass relation
     ind = np.where((mstot > 0) & (age_star > 0))
     AgeSMstar[j,:] = bin_it(x=np.log10(mstot[ind]) + 10.0, y=np.log10(age_star[ind]/1e9))
- 
+    print max(age_star[ind]) 
 
     #mass-metallicity relations
     ind = np.where((mstot > 0) & (zstar > 0))
